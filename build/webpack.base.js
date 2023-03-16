@@ -23,26 +23,16 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.ts$/,
-        exclude: [/node_modules/, /test/],
-        use: [
-          {
-            loader: 'babel-loader',
-          },
-          {
-            loader: 'ts-loader',
-          },
-        ],
-      },
-      {
-        test: /\.tsx|.js$/,
+        test: /\.tsx?|.js$/,
         exclude: /node_modules/,
-        use: {
+        use: [{
           loader: 'babel-loader', // babel-loader处理jsx或tsx文件
           options: {
             cacheDirectory: true,
           },
-        },
+        },{
+          loader: 'ts-loader'
+        }]
       },
       {
         test: /\.less$/,
