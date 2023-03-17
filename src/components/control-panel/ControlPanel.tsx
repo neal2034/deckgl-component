@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEvent } from 'react';
 import {
   Button,
   List,
@@ -7,18 +7,24 @@ import {
   ListSubheader,
   Switch,
 } from '@mui/material';
-import { MAP_LAYER_DATA } from '../../assets/constant';
-import { TextLayer } from '@deck.gl/layers/typed';
+import { ScatterplotLayer, TextLayer } from '@deck.gl/layers/typed';
 import './controlPannel.css';
 
 interface IControlPanelProps {
-  layers: TextLayer[];
+  layers: (TextLayer | ScatterplotLayer)[];
   handleToggle: (index: number) => void;
-  addLayer: VoidFunction;
+  addLayer: (geojsonFile: File) => void;
 }
 
 const ControlPanel = (props: IControlPanelProps): JSX.Element => {
   const { layers, handleToggle, addLayer } = props;
+
+  const onFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      addLayer(event.target.files[0]);
+    }
+  };
+
   return (
     <div className="panel">
       <List
@@ -37,30 +43,37 @@ const ControlPanel = (props: IControlPanelProps): JSX.Element => {
       >
         {layers.map((item, index) => {
           return (
-            <ListItem key={item.id}>
-              <ListItemText
-                id={item.id}
-                primary={item.id}
-                sx={{ color: '#666' }}
-              />
-              <Switch
-                edge="end"
-                checked={item.props.visible}
-                onChange={() => handleToggle(index)}
-                inputProps={{
-                  'aria-labelledby': 'switch-list-label-wifi',
-                }}
-              />
-            </ListItem>
+            index % 2 == 0 && (
+              <ListItem key={item.id}>
+                <ListItemText
+                  id={item.id}
+                  primary={'Layer-' + (index / 2 + 1)}
+                  sx={{ color: '#666' }}
+                />
+                <Switch
+                  edge="end"
+                  checked={item.props.visible}
+                  onChange={() => handleToggle(index / 2)}
+                  inputProps={{
+                    'aria-labelledby': 'switch-list-label-wifi',
+                  }}
+                />
+              </ListItem>
+            )
           );
         })}
-        {layers.length < MAP_LAYER_DATA.length && (
-          <ListItem>
-            <Button variant={'contained'} onClick={addLayer}>
-              Add Layer
-            </Button>
-          </ListItem>
-        )}
+
+        <ListItem>
+          <Button variant={'contained'} component={'label'}>
+            <input
+              hidden
+              accept=".geojson"
+              type="file"
+              onChange={onFileUpload}
+            />
+            Add Layer
+          </Button>
+        </ListItem>
       </List>
     </div>
   );

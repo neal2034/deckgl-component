@@ -1,15 +1,15 @@
-import { Accessor, Color } from '@deck.gl/core/typed';
-import { TextLayer } from '@deck.gl/layers/typed';
+import { Accessor, Color, LayerData } from '@deck.gl/core/typed';
+import { ScatterplotLayer, TextLayer } from '@deck.gl/layers/typed';
 
 export const createTextLayer = (props: {
-  dataUrl: string;
+  data: string | Promise<LayerData<any>>;
   id: string;
-  color?: number[] & Accessor<any, Color>;
+  color?: Accessor<any, Color>;
   visible: boolean;
 }) => {
   return new TextLayer({
     id: props.id,
-    data: props.dataUrl,
+    data: props.data,
     dataTransform: (d: any) => d.features,
     characterSet: 'auto',
     getAlignmentBaseline: 'center',
@@ -21,6 +21,32 @@ export const createTextLayer = (props: {
     getTextAnchor: 'middle',
     sizeScale: 1,
     pickable: true,
+    visible: props.visible,
+  });
+};
+
+export const createScatterplotLayer = (props: {
+  data: string | Promise<LayerData<any>>;
+  id: string;
+  color?: Accessor<any, Color>;
+  visible: boolean;
+}) => {
+  return new ScatterplotLayer({
+    id: props.id,
+    data: props.data,
+    dataTransform: (d: any) => d.features,
+    pickable: true,
+    opacity: 0.8,
+    stroked: true,
+    filled: true,
+    radiusScale: 26,
+    radiusMinPixels: 1,
+    radiusMaxPixels: 100,
+    lineWidthMinPixels: 1,
+    getPosition: d => d.geometry.coordinates,
+    getRadius: 12,
+    getFillColor: props.color || [255, 128, 0],
+    getLineColor: props.color || [255, 128, 0],
     visible: props.visible,
   });
 };

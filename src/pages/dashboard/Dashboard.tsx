@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { TextLayer } from '@deck.gl/layers/typed';
+import { ScatterplotLayer, TextLayer } from '@deck.gl/layers/typed';
 import { MapboxOverlay, MapboxOverlayProps } from '@deck.gl/mapbox/typed';
 import ReactMapBox from '../../components/react-mapbox/ReactMapBox';
 import { useControl } from 'react-map-gl';
-import { MAP_LAYER_DATA } from '../../assets/constant';
+import { MAP_DATA_COLOR } from '../../assets/constant';
 import { MAP_TOKEN } from '../../assets/constant';
 import ControlPanel from '../../components/control-panel/ControlPanel';
-import { createTextLayer } from '../../utils/layerUtil';
+import { createScatterplotLayer, createTextLayer } from '../../utils/layerUtil';
 import './dashboard.css';
+import { Accessor, Color, LayerData } from '@deck.gl/core/typed';
 
 function DeckGLOverlay(
   props: MapboxOverlayProps & {
@@ -19,29 +20,57 @@ function DeckGLOverlay(
   return null;
 }
 
-const Home = (): JSX.Element => {
-  const [layers, setLayers] = useState<TextLayer[]>([]);
+type LayerType = TextLayer | ScatterplotLayer;
 
-  const addLayer = () => {
-    const dataIndex = layers.length;
-    const layerData = MAP_LAYER_DATA[dataIndex];
-    const layer = createTextLayer({
-      id: layerData.key,
-      dataUrl: layerData.source,
-      visible: true,
-      color: layerData.color,
-    });
-    setLayers([...layers, layer]);
+const Dashboard = (): JSX.Element => {
+  const [layers, setLayers] = useState<LayerType[]>([]);
+  const [layerData, setLayerData] = useState<
+    { content: Promise<LayerData<any>>; color: Accessor<any, Color> }[]
+  >([]);
+
+  const addLayer = (file: File) => {
+    const fileReader = new FileReader();
+    fileReader.readAsText(file);
+    fileReader.onload = e => {
+      if (e.target && typeof e.target.result === 'string') {
+        const value = JSON.parse(e.target.result);
+        const dataIndex = layers.length;
+        const color = MAP_DATA_COLOR[dataIndex % MAP_DATA_COLOR.length];
+        const scatterLayer = createScatterplotLayer({
+          id: 'Layer' + dataIndex,
+          data: value,
+          visible: true,
+          color: color,
+        });
+        const textLayer = createTextLayer({
+          id: 'Layer' + (dataIndex + 1),
+          data: value,
+          visible: true,
+          color: [0, 0, 0],
+        });
+
+        setLayers([...layers, scatterLayer, textLayer]);
+        setLayerData([...layerData, { content: value, color }]);
+      }
+    };
   };
 
   const handleToggle = (layerIndex: number) => {
+    const scatterLayerIndex = layerIndex * 2;
+    const textLayerIndex = layerIndex * 2 + 1;
     const tempLayers = layers.slice(0);
-    const layerData = MAP_LAYER_DATA[layerIndex];
-    tempLayers[layerIndex] = createTextLayer({
-      id: layerData.key,
-      dataUrl: layerData.source,
-      visible: !layers[layerIndex].props.visible,
-      color: layerData.color,
+    const data = layerData[layerIndex];
+    tempLayers[scatterLayerIndex] = createScatterplotLayer({
+      id: tempLayers[scatterLayerIndex].id,
+      data: data.content,
+      visible: !tempLayers[scatterLayerIndex].props.visible,
+      color: data.color,
+    });
+    tempLayers[textLayerIndex] = createTextLayer({
+      id: tempLayers[textLayerIndex].id,
+      data: data.content,
+      visible: !tempLayers[textLayerIndex].props.visible,
+      color: [0, 0, 0],
     });
     setLayers(tempLayers);
   };
@@ -60,4 +89,4 @@ const Home = (): JSX.Element => {
   );
 };
 
-export default Home;
+export default Dashboard;
