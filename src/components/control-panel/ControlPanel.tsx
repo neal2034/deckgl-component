@@ -22,6 +22,7 @@ const ControlPanel = (props: IControlPanelProps): JSX.Element => {
   const onFileUpload = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       addLayer(event.target.files[0]);
+      event.target.value = '';
     }
   };
 
