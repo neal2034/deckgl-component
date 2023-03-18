@@ -17,7 +17,7 @@ export default function Router() {
   return useRoutes([
     {
       path: '/',
-      element: <Dashboard />,
+      element: <Home />,
     },
   ]);
 }

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { ScatterplotLayer, TextLayer } from '@deck.gl/layers/typed';
 import { MapboxOverlay, MapboxOverlayProps } from '@deck.gl/mapbox/typed';
 import ReactMapBox from '../../components/react-mapbox/ReactMapBox';
 import { useControl } from 'react-map-gl';
 import { MAP_DATA_COLOR } from '../../assets/constant';
 import { MAP_TOKEN } from '../../assets/constant';
 import ControlPanel from '../../components/control-panel/ControlPanel';
-import { createScatterplotLayer, createTextLayer } from '../../utils/layerUtil';
+import {
+  createScatterplotLayer,
+  createTextLayer,
+  getToggleLayer,
+} from '../../utils/layerUtil';
 import './dashboard.css';
-import { Accessor, Color, LayerData } from '@deck.gl/core/typed';
+import { Layer } from '@deck.gl/core/typed';
 
 function DeckGLOverlay(
   props: MapboxOverlayProps & {
@@ -20,13 +23,8 @@ function DeckGLOverlay(
   return null;
 }
 
-type LayerType = TextLayer | ScatterplotLayer;
-
 const Dashboard = (): JSX.Element => {
-  const [layers, setLayers] = useState<LayerType[]>([]);
-  const [layerData, setLayerData] = useState<
-    { content: Promise<LayerData<any>>; color: Accessor<any, Color> }[]
-  >([]);
+  const [layers, setLayers] = useState<Layer[]>([]);
 
   const addLayer = (file: File) => {
     const fileReader = new FileReader();
@@ -50,7 +48,6 @@ const Dashboard = (): JSX.Element => {
         });
 
         setLayers([...layers, scatterLayer, textLayer]);
-        setLayerData([...layerData, { content: value, color }]);
       }
     };
   };
@@ -59,19 +56,15 @@ const Dashboard = (): JSX.Element => {
     const scatterLayerIndex = layerIndex * 2;
     const textLayerIndex = layerIndex * 2 + 1;
     const tempLayers = layers.slice(0);
-    const data = layerData[layerIndex];
-    tempLayers[scatterLayerIndex] = createScatterplotLayer({
-      id: tempLayers[scatterLayerIndex].id,
-      data: data.content,
-      visible: !tempLayers[scatterLayerIndex].props.visible,
-      color: data.color,
-    });
-    tempLayers[textLayerIndex] = createTextLayer({
-      id: tempLayers[textLayerIndex].id,
-      data: data.content,
-      visible: !tempLayers[textLayerIndex].props.visible,
-      color: [0, 0, 0],
-    });
+    const toggledScatterLayer = getToggleLayer(tempLayers[scatterLayerIndex]);
+    const toggledTextLayer = getToggleLayer(tempLayers[textLayerIndex]);
+    if (toggledScatterLayer) {
+      tempLayers[scatterLayerIndex] = toggledScatterLayer;
+    }
+    if (toggledTextLayer) {
+      tempLayers[textLayerIndex] = toggledTextLayer;
+    }
+
     setLayers(tempLayers);
   };
 

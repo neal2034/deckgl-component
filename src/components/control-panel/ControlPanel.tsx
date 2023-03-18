@@ -7,11 +7,11 @@ import {
   ListSubheader,
   Switch,
 } from '@mui/material';
-import { ScatterplotLayer, TextLayer } from '@deck.gl/layers/typed';
 import './controlPannel.css';
+import { Layer } from '@deck.gl/core/typed';
 
 interface IControlPanelProps {
-  layers: (TextLayer | ScatterplotLayer)[];
+  layers: Layer[];
   handleToggle: (index: number) => void;
   addLayer: (geojsonFile: File) => void;
 }

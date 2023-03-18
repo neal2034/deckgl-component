@@ -1,11 +1,11 @@
-import { Accessor, Color, LayerData } from '@deck.gl/core/typed';
+import { Accessor, Color, Layer, LayerData } from '@deck.gl/core/typed';
 import { ScatterplotLayer, TextLayer } from '@deck.gl/layers/typed';
 
 export const createTextLayer = (props: {
   data: string | Promise<LayerData<any>>;
   id: string;
   color?: Accessor<any, Color>;
-  visible: boolean;
+  visible?: boolean;
 }) => {
   return new TextLayer({
     id: props.id,
@@ -21,7 +21,7 @@ export const createTextLayer = (props: {
     getTextAnchor: 'middle',
     sizeScale: 1,
     pickable: true,
-    visible: props.visible,
+    visible: props.visible || true,
   });
 };
 
@@ -29,7 +29,7 @@ export const createScatterplotLayer = (props: {
   data: string | Promise<LayerData<any>>;
   id: string;
   color?: Accessor<any, Color>;
-  visible: boolean;
+  visible?: boolean;
 }) => {
   return new ScatterplotLayer({
     id: props.id,
@@ -47,6 +47,23 @@ export const createScatterplotLayer = (props: {
     getRadius: 12,
     getFillColor: props.color || [255, 128, 0],
     getLineColor: props.color || [255, 128, 0],
-    visible: props.visible,
+    visible: props.visible || true,
   });
+};
+
+export const getToggleLayer = (layer: Layer) => {
+  if (layer instanceof TextLayer) {
+    console.log('it is text', layer.props.visible);
+    return new TextLayer({
+      ...layer.props,
+      visible: !layer.props.visible,
+      data: layer.props.data,
+    });
+  } else if (layer instanceof ScatterplotLayer) {
+    return new ScatterplotLayer({
+      ...layer.props,
+      visible: !layer.props.visible,
+      data: layer.props.data,
+    });
+  }
 };
