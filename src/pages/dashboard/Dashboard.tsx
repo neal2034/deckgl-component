@@ -5,13 +5,10 @@ import { useControl } from 'react-map-gl';
 import { MAP_DATA_COLOR } from '../../assets/constant';
 import { MAP_TOKEN } from '../../assets/constant';
 import ControlPanel from '../../components/control-panel/ControlPanel';
-import {
-  createScatterplotLayer,
-  createTextLayer,
-  getToggleLayer,
-} from '../../utils/layerUtil';
 import './dashboard.css';
 import { Layer } from '@deck.gl/core/typed';
+import NodeLayer from '../../components/node-layer/NodeLayer';
+import { v4 as uuidv4 } from 'uuid';
 
 function DeckGLOverlay(
   props: MapboxOverlayProps & {
@@ -25,6 +22,7 @@ function DeckGLOverlay(
 
 const Dashboard = (): JSX.Element => {
   const [layers, setLayers] = useState<Layer[]>([]);
+  const [refresh, setRefresh] = useState(0);
 
   const addLayer = (file: File) => {
     const fileReader = new FileReader();
@@ -34,38 +32,20 @@ const Dashboard = (): JSX.Element => {
         const value = JSON.parse(e.target.result);
         const dataIndex = layers.length;
         const color = MAP_DATA_COLOR[dataIndex % MAP_DATA_COLOR.length];
-        const scatterLayer = createScatterplotLayer({
-          id: 'Layer' + dataIndex,
+        const node = new NodeLayer({
+          id: uuidv4(),
           data: value,
-          visible: true,
-          color: color,
+          color,
         });
-        const textLayer = createTextLayer({
-          id: 'Layer' + (dataIndex + 1),
-          data: value,
-          visible: true,
-          color: [0, 0, 0],
-        });
-
-        setLayers([...layers, scatterLayer, textLayer]);
+        setLayers([...layers, node]);
       }
     };
   };
 
   const handleToggle = (layerIndex: number) => {
-    const scatterLayerIndex = layerIndex * 2;
-    const textLayerIndex = layerIndex * 2 + 1;
-    const tempLayers = layers.slice(0);
-    const toggledScatterLayer = getToggleLayer(tempLayers[scatterLayerIndex]);
-    const toggledTextLayer = getToggleLayer(tempLayers[textLayerIndex]);
-    if (toggledScatterLayer) {
-      tempLayers[scatterLayerIndex] = toggledScatterLayer;
-    }
-    if (toggledTextLayer) {
-      tempLayers[textLayerIndex] = toggledTextLayer;
-    }
-
-    setLayers(tempLayers);
+    const layer = layers[layerIndex] as NodeLayer;
+    layer.toggle();
+    setRefresh(refresh + 1);
   };
 
   return (

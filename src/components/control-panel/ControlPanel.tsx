@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import './controlPannel.css';
 import { Layer } from '@deck.gl/core/typed';
+import NodeLayer from '../node-layer/NodeLayer';
 
 interface IControlPanelProps {
   layers: Layer[];
@@ -44,23 +45,21 @@ const ControlPanel = (props: IControlPanelProps): JSX.Element => {
       >
         {layers.map((item, index) => {
           return (
-            index % 2 == 0 && (
-              <ListItem key={item.id}>
-                <ListItemText
-                  id={item.id}
-                  primary={'Layer-' + (index / 2 + 1)}
-                  sx={{ color: '#666' }}
-                />
-                <Switch
-                  edge="end"
-                  checked={item.props.visible}
-                  onChange={() => handleToggle(index / 2)}
-                  inputProps={{
-                    'aria-labelledby': 'switch-list-label-wifi',
-                  }}
-                />
-              </ListItem>
-            )
+            <ListItem key={index}>
+              <ListItemText
+                id={item.id}
+                primary={'Layer-' + (index + 1)}
+                sx={{ color: '#666' }}
+              />
+              <Switch
+                edge="end"
+                checked={(item as NodeLayer).isVisible()}
+                onChange={() => handleToggle(index)}
+                inputProps={{
+                  'aria-labelledby': 'switch-list-label-wifi',
+                }}
+              />
+            </ListItem>
           );
         })}
 
