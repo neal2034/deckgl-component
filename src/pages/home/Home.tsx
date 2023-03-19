@@ -11,7 +11,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 const Home = (): JSX.Element => {
   const [layers, setLayers] = useState<Layer[]>([]);
-  const [refresh, setRefresh] = useState(0);
   const [mapboxOverLay, setMapboxOverLay] = useState<MapboxOverlay | null>(
     null,
   );
@@ -33,6 +32,7 @@ const Home = (): JSX.Element => {
           id: uuidv4(),
           data: value,
           color,
+          visible: true,
         });
         setLayers([...layers, node]);
       }
@@ -41,8 +41,15 @@ const Home = (): JSX.Element => {
 
   const handleToggle = (layerIndex: number) => {
     const layer = layers[layerIndex] as NodeLayer;
-    layer.toggle();
-    setRefresh(refresh + 1);
+    const props = {
+      id: layer.props.id,
+      visible: !layer.props.visible,
+      data: layer.props.data,
+      color: layer.props.color,
+    };
+    const tempLayers = layers.slice(0);
+    tempLayers[layerIndex] = new NodeLayer(props);
+    setLayers(tempLayers);
   };
 
   useEffect(() => {

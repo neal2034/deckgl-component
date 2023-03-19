@@ -9,7 +9,6 @@ import {
 } from '@mui/material';
 import './controlPannel.css';
 import { Layer } from '@deck.gl/core/typed';
-import NodeLayer from '../node-layer/NodeLayer';
 
 interface IControlPanelProps {
   layers: Layer[];
@@ -53,7 +52,7 @@ const ControlPanel = (props: IControlPanelProps): JSX.Element => {
               />
               <Switch
                 edge="end"
-                checked={(item as NodeLayer).isVisible()}
+                checked={item.props.visible}
                 onChange={() => handleToggle(index)}
                 inputProps={{
                   'aria-labelledby': 'switch-list-label-wifi',

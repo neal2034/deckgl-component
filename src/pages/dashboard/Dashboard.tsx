@@ -22,7 +22,6 @@ function DeckGLOverlay(
 
 const Dashboard = (): JSX.Element => {
   const [layers, setLayers] = useState<Layer[]>([]);
-  const [refresh, setRefresh] = useState(0);
 
   const addLayer = (file: File) => {
     const fileReader = new FileReader();
@@ -36,6 +35,7 @@ const Dashboard = (): JSX.Element => {
           id: uuidv4(),
           data: value,
           color,
+          visible: true,
         });
         setLayers([...layers, node]);
       }
@@ -44,8 +44,15 @@ const Dashboard = (): JSX.Element => {
 
   const handleToggle = (layerIndex: number) => {
     const layer = layers[layerIndex] as NodeLayer;
-    layer.toggle();
-    setRefresh(refresh + 1);
+    const props = {
+      id: layer.props.id,
+      visible: !layer.props.visible,
+      data: layer.props.data,
+      color: layer.props.color,
+    };
+    const tempLayers = layers.slice(0);
+    tempLayers[layerIndex] = new NodeLayer(props);
+    setLayers(tempLayers);
   };
 
   return (
